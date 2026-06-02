@@ -1,0 +1,285 @@
+:root {
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  color: #443126;
+  background:
+    radial-gradient(circle at top, rgba(255, 227, 197, 0.9), transparent 35%),
+    linear-gradient(180deg, #fff7ef 0%, #fbe5d2 100%);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.8), transparent 22%),
+    radial-gradient(circle at 80% 10%, rgba(255, 221, 185, 0.85), transparent 20%),
+    linear-gradient(180deg, #fffaf3 0%, #f6d9b7 100%);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+}
+
+.app-shell {
+  width: min(1080px, calc(100vw - 24px));
+  margin: 0 auto;
+  padding: 20px 0 48px;
+}
+
+.topbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #8f6240;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.topbar h1,
+.panel h2,
+.dev-screen h2 {
+  margin: 0;
+}
+
+.tabbar {
+  display: flex;
+  gap: 8px;
+}
+
+.tabbar__button,
+.secondary-button {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  color: #68462d;
+}
+
+.tabbar__button.active {
+  background: #eb8c39;
+  color: #fff7f0;
+}
+
+.child-screen {
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+}
+
+.face-card,
+.panel {
+  background: rgba(255, 250, 243, 0.92);
+  border: 1px solid rgba(161, 116, 77, 0.16);
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(122, 83, 38, 0.12);
+}
+
+.face-card {
+  width: min(100%, 520px);
+  padding: 32px 24px 24px;
+  text-align: center;
+}
+
+.face-card__bubble {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  position: relative;
+  background:
+    radial-gradient(circle at 35% 30%, #ffe6c2 0%, #e9b67a 100%);
+}
+
+.face-card__ears::before,
+.face-card__ears::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  background: #d99b5f;
+}
+
+.face-card__ears::before {
+  left: 10px;
+  transform: rotate(-18deg);
+}
+
+.face-card__ears::after {
+  right: 10px;
+  transform: rotate(18deg);
+}
+
+.face-card__face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-content: center;
+  justify-items: center;
+  gap: 20px 28px;
+  padding-top: 56px;
+}
+
+.face-card__eye {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4a321f;
+}
+
+.face-card__nose {
+  grid-column: 1 / -1;
+  width: 28px;
+  height: 20px;
+  border-radius: 999px;
+  background: #805338;
+  box-shadow: 0 18px 0 -8px #805338;
+}
+
+.reply-chip {
+  min-height: 54px;
+  margin: 14px 0 0;
+  padding: 14px 18px;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.talk-button {
+  width: min(100%, 360px);
+  padding: 20px 24px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f29b4b, #de6d2d);
+  color: #fffaf5;
+  font-size: 1.2rem;
+  font-weight: 700;
+  box-shadow: 0 20px 40px rgba(198, 101, 41, 0.28);
+}
+
+.talk-button--active {
+  background: linear-gradient(135deg, #d35c52, #b43d29);
+}
+
+.helper-text,
+.error-text {
+  margin: 0;
+  font-size: 0.94rem;
+}
+
+.error-text {
+  color: #9f2f1d;
+}
+
+.panel-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.panel {
+  padding: 20px;
+}
+
+.panel--wide {
+  grid-column: 1 / -1;
+}
+
+.panel label {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.panel input,
+.panel select,
+.panel textarea,
+.dev-screen textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(125, 80, 47, 0.2);
+  background: #fffdfa;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.metric {
+  display: block;
+  margin: 8px 0 16px;
+  font-size: 2.2rem;
+}
+
+.usage-list,
+.plain-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.usage-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.memory-list {
+  display: grid;
+  gap: 12px;
+}
+
+.memory-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.dev-screen {
+  display: grid;
+  gap: 16px;
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    width: calc(100vw - 16px);
+    padding-top: 12px;
+  }
+
+  .topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tabbar {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .tabbar__button {
+    flex: 1;
+  }
+}

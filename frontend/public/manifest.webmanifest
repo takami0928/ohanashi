@@ -1,0 +1,10 @@
+{
+  "name": "しゃべるぬいぐるみの脳",
+  "short_name": "ぬいぐるみの脳",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff9ef",
+  "theme_color": "#f2a65a",
+  "description": "ローカル会話オーケストレーター型のしゃべるぬいぐるみMVP"
+}
+
