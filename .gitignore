@@ -1,3 +1,18 @@
+node_modules/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+dist/
+build/
+*.db
+*.sqlite
+*.sqlite3
+data/
+logs/
+.env
+.env.local
+.DS_Store
 frontend/node_modules/
 frontend/dist/
 frontend/*.tsbuildinfo
@@ -6,5 +21,4 @@ frontend/vite.config.d.ts
 backend/data/*.json
 backend/data/*.sqlite3
 backend/.pytest_cache/
-__pycache__/
 *.pyc

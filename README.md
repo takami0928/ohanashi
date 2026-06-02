@@ -66,6 +66,16 @@ npm run dev
 ```bash
 $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'
 py -3.8 -m pytest backend/tests -q
+
+## SQLite の現状
+
+この環境の `py -3.8` では、次のエラーで `sqlite3` が未復旧です。
+
+```text
+ImportError: DLL load failed while importing _sqlite3: 指定されたモジュールが見つかりません。
+```
+
+そのため、現在の `/api/health` は `storageDriver: "json-fallback"` を返します。
 ```
 
 ## モックとフォールバック

@@ -44,4 +44,4 @@ py -3.8 -m backend.app.main
 
 - 通常は SQLite を優先します
 - `sqlite3` が利用できない環境では JSON フォールバックを使います
-
+- この作業環境の `py -3.8` では `_sqlite3` の DLL 読み込みに失敗し、現状は JSON フォールバックで動作します
