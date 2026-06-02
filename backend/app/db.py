@@ -1,12 +1,46 @@
 from __future__ import annotations
 
 import json
+import os
+import sys
 import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from .schemas import MemoryCard, Settings
+
+
+def _prepare_windows_sqlite_runtime() -> None:
+    if os.name != "nt":
+        return
+
+    candidates = [
+        Path(sys.base_prefix) / "Library" / "bin",
+        Path(sys.exec_prefix) / "Library" / "bin",
+    ]
+
+    seen = set()
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve()
+        except OSError:
+            continue
+        if resolved in seen or not resolved.exists():
+            continue
+        seen.add(resolved)
+        if hasattr(os, "add_dll_directory"):
+            try:
+                os.add_dll_directory(str(resolved))
+            except (FileNotFoundError, OSError):
+                pass
+        current_path = os.environ.get("PATH", "")
+        prefix = str(resolved)
+        if prefix.lower() not in current_path.lower():
+            os.environ["PATH"] = prefix + os.pathsep + current_path
+
+
+_prepare_windows_sqlite_runtime()
 
 try:
     import sqlite3 as sqlite_module  # type: ignore

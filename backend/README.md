@@ -14,14 +14,15 @@
 
 推奨:
 
-```bash
-uvicorn backend.app.main:app --reload
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_backend.ps1
 ```
 
-FastAPI / Uvicorn 未導入でも最低限動作確認したい場合:
+手動起動:
 
-```bash
-py -3.8 -m backend.app.main
+```powershell
+$env:PATH='C:\ProgramData\Anaconda3\Library\bin;' + $env:PATH
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 ## 環境変数
@@ -44,4 +45,33 @@ py -3.8 -m backend.app.main
 
 - 通常は SQLite を優先します
 - `sqlite3` が利用できない環境では JSON フォールバックを使います
-- この作業環境の `py -3.8` では `_sqlite3` の DLL 読み込みに失敗し、現状は JSON フォールバックで動作します
+- `storageDriver: sqlite` が正常です
+- `storageDriver: json-fallback` の場合は Python 側の `sqlite3` が使えていない可能性があります
+- `py -3.8` で `_sqlite3` DLL load failed が出る場合は、`_sqlite3.pyd` の依存 DLL 探索が不足している意味です
+- この作業環境では `C:\ProgramData\Anaconda3\Library\bin` を `PATH` に含め、backend venv から起動することで SQLite を利用できました
+
+## セットアップ確認
+
+SQLite 確認:
+
+```powershell
+backend\.venv\Scripts\python.exe -c "from app.db import create_storage; from pathlib import Path; print(create_storage(Path('data')).driver)"
+```
+
+期待値:
+
+```text
+sqlite
+```
+
+health 確認:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://localhost:8000/api/health | Select-Object -ExpandProperty Content
+```
+
+期待値:
+
+```json
+{"ok":true,"storageDriver":"sqlite"}
+```

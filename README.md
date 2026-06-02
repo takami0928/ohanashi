@@ -33,17 +33,47 @@
 
 ### 1. バックエンド
 
-推奨:
+推奨 Python:
 
-```bash
-py -3.8 -m pip install -r backend/requirements.txt
-py -3.8 -m uvicorn backend.app.main:app --reload
+- 第一候補: `sqlite3` がそのまま使える公式 Python 3.10 - 3.12
+- この作業環境での検証実績: `py -3.8` (`C:\ProgramData\Anaconda3\python.exe`) + backend venv
+
+SQLite 確認コマンド:
+
+```powershell
+py -3.8 -c "import sqlite3; print(sqlite3.sqlite_version)"
 ```
 
-この作業環境のように FastAPI / sqlite3 がそろっていない場合のフォールバック:
+この作業環境では、Anaconda の DLL 探索の都合で上のコマンドがそのままだと失敗し、次のようなエラーが出ました。
 
-```bash
-py -3.8 -m backend.app.main
+```text
+ImportError: DLL load failed while importing _sqlite3: 指定されたモジュールが見つかりません。
+```
+
+これは `sqlite3` 本体ではなく、Python 実行時に `_sqlite3.pyd` が依存する DLL を見つけられていない意味です。
+
+backend venv 作成手順:
+
+```powershell
+py -3.8 -m venv backend\.venv
+backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+backend\.venv\Scripts\python.exe -m pip install pytest
+```
+
+Windows の Anaconda 系 Python では、`C:\ProgramData\Anaconda3\Library\bin` を `PATH` に含めて起動すると `_sqlite3` と `_ssl` が安定します。リポジトリにはそのための起動スクリプト [backend/run_backend.ps1](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/backend/run_backend.ps1>) を含めています。
+
+backend 起動:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File backend\run_backend.ps1
+```
+
+または手動で起動する場合:
+
+```powershell
+$env:PATH='C:\ProgramData\Anaconda3\Library\bin;' + $env:PATH
+cd backend
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 ### 2. フロントエンド
@@ -59,6 +89,20 @@ npm run dev
 - フロント: `http://127.0.0.1:5173`
 - バックエンド: `http://127.0.0.1:8000`
 
+health 確認:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://localhost:8000/api/health | Select-Object -ExpandProperty Content
+```
+
+正常:
+
+```json
+{"ok":true,"storageDriver":"sqlite"}
+```
+
+`storageDriver: "json-fallback"` の場合は、Python 側の `sqlite3` が使えていない可能性があります。
+
 ## テスト
 
 この環境では pytest の自動ロードプラグインがハングしたため、以下で実行します。
@@ -66,17 +110,18 @@ npm run dev
 ```bash
 $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'
 py -3.8 -m pytest backend/tests -q
+```
 
 ## SQLite の現状
 
-この環境の `py -3.8` では、次のエラーで `sqlite3` が未復旧です。
+今回の復旧作業では、backend venv + [backend/run_backend.ps1](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/backend/run_backend.ps1>) で `/api/health` が `storageDriver: "sqlite"` を返すことを確認しました。
 
-```text
-ImportError: DLL load failed while importing _sqlite3: 指定されたモジュールが見つかりません。
-```
+注意点:
 
-そのため、現在の `/api/health` は `storageDriver: "json-fallback"` を返します。
-```
+- `py -3.8 -c "import sqlite3; print(sqlite3.sqlite_version)"` 単体では、Anaconda の DLL 探索不足で失敗することがあります
+- backend 側では [backend/app/db.py](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/backend/app/db.py>) で Windows の DLL 探索パスを補い、SQLite を優先します
+- それでも `json-fallback` になる場合は、SQLite 付きの公式 Python を入れるか、`sqlite3` が使える Python で venv を作り直してください
+- fallback でも、会話全文・音声・文字起こし全文ログは保存しません
 
 ## モックとフォールバック
 
