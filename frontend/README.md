@@ -10,15 +10,23 @@
 
 ## 起動
 
-```bash
-npm install
-npm run dev
+Windows では PowerShell の `npm.ps1` が Execution Policy でブロックされることがあるため、`npm.cmd` を推奨します。
+
+```powershell
+npm.cmd install
+npm.cmd run dev
 ```
 
 同一 Wi-Fi のスマホから開く場合:
 
-```bash
-npm run dev -- --host 0.0.0.0
+```powershell
+npm.cmd run dev -- --host 0.0.0.0
+```
+
+補助スクリプト:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run_frontend.ps1
 ```
 
 ## ビルド
@@ -32,6 +40,8 @@ npm run build
 デフォルトは `http://127.0.0.1:8000` です。
 
 スマホから確認するときは、frontend は `0.0.0.0` で listen させ、スマホでは `http://<PCのIPv4アドレス>:5173` を開きます。
+
+`npm.ps1 を読み込めない` 場合は、`npm` ではなく `npm.cmd` を使ってください。
 
 変更する場合:
 

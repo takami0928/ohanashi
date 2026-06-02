@@ -12,6 +12,20 @@
 
 ## 起動
 
+clone 直後の注意:
+
+- `backend\.venv` は Git に含めません
+- clone 直後は `backend\.venv` が存在しません
+- 先に [setup_backend.ps1](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/backend/setup_backend.ps1>) を実行してください
+- 公式 Python 3.10 - 3.12 を推奨します
+- Anaconda Python 3.8 は `ssl` / `sqlite3` DLL 問題が出ることがあるため非推奨です
+
+初回セットアップ:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup_backend.ps1
+```
+
 推奨:
 
 ```powershell
@@ -52,6 +66,13 @@ $env:PATH='C:\ProgramData\Anaconda3\Library\bin;' + $env:PATH
 
 ## セットアップ確認
 
+Python 確認:
+
+```powershell
+py -0p
+py -3.12 -c "import ssl, sqlite3; print(ssl.OPENSSL_VERSION); print(sqlite3.sqlite_version)"
+```
+
 SQLite 確認:
 
 ```powershell
@@ -75,3 +96,20 @@ Invoke-WebRequest -UseBasicParsing http://localhost:8000/api/health | Select-Obj
 ```json
 {"ok":true,"storageDriver":"sqlite"}
 ```
+
+## トラブルシュート
+
+`backend\.venv\Scripts\python.exe was not found`
+
+- clone 直後で backend 仮想環境が未作成です
+- `powershell -ExecutionPolicy Bypass -File .\setup_backend.ps1` を実行してください
+
+`No module named uvicorn`
+
+- `requirements.txt` が未インストールです
+- `.\.venv\Scripts\python.exe -m pip install -r requirements.txt` を実行してください
+
+`ssl module in Python is not available`
+
+- Python 側の SSL モジュールが壊れている可能性があります
+- 公式 Python 3.10 - 3.12 を推奨します

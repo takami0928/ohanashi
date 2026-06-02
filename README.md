@@ -33,34 +33,44 @@
 
 ### 1. バックエンド
 
+clone 直後の注意:
+
+- `backend\.venv` は Git 管理しません
+- clone 直後は `backend\.venv` が存在しないのが正常です
+- まず backend の初回セットアップを行ってください
+
 推奨 Python:
 
 - 第一候補: `sqlite3` がそのまま使える公式 Python 3.10 - 3.12
-- この作業環境での検証実績: `py -3.8` (`C:\ProgramData\Anaconda3\python.exe`) + backend venv
+- Anaconda Python 3.8 は `ssl` / `sqlite3` DLL 問題が出ることがあるため非推奨
+- この作業環境での検証実績: `py -3.8` (`C:\ProgramData\Anaconda3\python.exe`) + backend venv + 補助スクリプト
 
-SQLite 確認コマンド:
+Python 確認コマンド:
 
 ```powershell
-py -3.8 -c "import sqlite3; print(sqlite3.sqlite_version)"
+py -0p
+py -3.12 -c "import ssl, sqlite3; print(ssl.OPENSSL_VERSION); print(sqlite3.sqlite_version)"
 ```
 
-この作業環境では、Anaconda の DLL 探索の都合で上のコマンドがそのままだと失敗し、次のようなエラーが出ました。
+backend 初回セットアップ:
 
-```text
-ImportError: DLL load failed while importing _sqlite3: 指定されたモジュールが見つかりません。
+```powershell
+cd D:\おはなし\ohanashi
+powershell -ExecutionPolicy Bypass -File backend\setup_backend.ps1
 ```
 
-これは `sqlite3` 本体ではなく、Python 実行時に `_sqlite3.pyd` が依存する DLL を見つけられていない意味です。
+手動で行う場合:
 
 backend venv 作成手順:
 
 ```powershell
-py -3.8 -m venv backend\.venv
-backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
-backend\.venv\Scripts\python.exe -m pip install pytest
+cd D:\おはなし\ohanashi\backend
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Windows の Anaconda 系 Python では、`C:\ProgramData\Anaconda3\Library\bin` を `PATH` に含めて起動すると `_sqlite3` と `_ssl` が安定します。リポジトリにはそのための起動スクリプト [backend/run_backend.ps1](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/backend/run_backend.ps1>) を含めています。
+Windows の Anaconda 系 Python では、`ssl module in Python is not available` や `_sqlite3` / `_ssl` の DLL 解決問題が出ることがあります。リポジトリには補助スクリプト [backend/setup_backend.ps1](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/backend/setup_backend.ps1>) と [backend/run_backend.ps1](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/backend/run_backend.ps1>) を含めています。
 
 backend 起動:
 
@@ -80,16 +90,18 @@ cd backend
 
 ```bash
 cd frontend
-npm install
-npm run dev
+npm.cmd install
+npm.cmd run dev
 ```
 
 スマホなど別端末から同一 Wi-Fi でアクセスする場合:
 
 ```bash
 cd frontend
-npm run dev -- --host 0.0.0.0
+npm.cmd run dev -- --host 0.0.0.0
 ```
+
+PowerShell では `npm.ps1` が Execution Policy でブロックされることがあるため、Windows では `npm.cmd` を推奨します。補助スクリプトとして [frontend/run_frontend.ps1](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/frontend/run_frontend.ps1>) も使えます。
 
 ### 3. アクセス
 
@@ -99,7 +111,7 @@ npm run dev -- --host 0.0.0.0
 health 確認:
 
 ```powershell
-Invoke-WebRequest -UseBasicParsing http://localhost:8000/api/health | Select-Object -ExpandProperty Content
+curl http://localhost:8000/api/health
 ```
 
 正常:
@@ -163,6 +175,39 @@ py -3.8 -m pytest backend/tests -q
 - backend 側では [backend/app/db.py](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/backend/app/db.py>) で Windows の DLL 探索パスを補い、SQLite を優先します
 - それでも `json-fallback` になる場合は、SQLite 付きの公式 Python を入れるか、`sqlite3` が使える Python で venv を作り直してください
 - fallback でも、会話全文・音声・文字起こし全文ログは保存しません
+
+## トラブルシュート
+
+`backend\.venv\Scripts\python.exe was not found`
+
+- 原因: clone 直後で backend 仮想環境が未作成
+- 対応: `powershell -ExecutionPolicy Bypass -File backend\setup_backend.ps1`
+
+`No module named uvicorn`
+
+- 原因: `requirements.txt` が未インストール
+- 対応: `.\backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt`
+
+`ssl module in Python is not available`
+
+- 原因: Python 実行環境の SSL DLL が壊れている、または Anaconda 環境の DLL 解決問題
+- 対応: 公式 Python 3.10 - 3.12 を入れ、その Python で venv を作り直す
+
+`ImportError: DLL load failed while importing _sqlite3`
+
+- 原因: Python 実行時に `_sqlite3.pyd` が依存する DLL を見つけられていない
+- 対応: 公式 Python 3.10 - 3.12 を推奨。Anaconda を使う場合は `backend\setup_backend.ps1` または `backend\run_backend.ps1` を使う
+
+`npm.ps1 を読み込めない`
+
+- 原因: PowerShell の Execution Policy で `npm.ps1` がブロックされている
+- 対応:
+
+```powershell
+cd frontend
+npm.cmd install
+npm.cmd run dev -- --host 0.0.0.0
+```
 
 ## ローカル実機確認チェックリスト
 
