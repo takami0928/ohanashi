@@ -84,6 +84,13 @@ npm install
 npm run dev
 ```
 
+スマホなど別端末から同一 Wi-Fi でアクセスする場合:
+
+```bash
+cd frontend
+npm run dev -- --host 0.0.0.0
+```
+
 ### 3. アクセス
 
 - フロント: `http://127.0.0.1:5173`
@@ -102,6 +109,40 @@ Invoke-WebRequest -UseBasicParsing http://localhost:8000/api/health | Select-Obj
 ```
 
 `storageDriver: "json-fallback"` の場合は、Python 側の `sqlite3` が使えていない可能性があります。
+
+### 4. スマホからのアクセス
+
+PC の IPv4 アドレス確認:
+
+```powershell
+ipconfig
+```
+
+`IPv4 Address` に表示された値を使って、スマホから次の形式でアクセスします。
+
+```text
+http://<PCのIPv4アドレス>:5173
+```
+
+例:
+
+```text
+http://192.168.1.20:5173
+```
+
+前提:
+
+- PC とスマホが同じ Wi-Fi に接続されている
+- frontend を `npm run dev -- --host 0.0.0.0` で起動している
+- backend は PC 上で起動済みである
+
+Windows ファイアウォールで詰まる場合の確認項目:
+
+- `node.exe` または `npm` の受信がブロックされていないか
+- `5173` 番ポートへのローカルネットワーク接続が遮断されていないか
+- 初回起動時の「プライベートネットワークで許可」を拒否していないか
+- セキュリティソフトがローカル HTTP 通信を遮断していないか
+- `http://127.0.0.1:5173` は PC で開けるがスマホからだけ開けない場合、まずファイアウォールと `--host 0.0.0.0` を疑う
 
 ## テスト
 
@@ -122,6 +163,20 @@ py -3.8 -m pytest backend/tests -q
 - backend 側では [backend/app/db.py](</C:/Users/kouhei takami/Documents/Codex/2026-06-02/mvp-5-mvp-web-pwa-ai/backend/app/db.py>) で Windows の DLL 探索パスを補い、SQLite を優先します
 - それでも `json-fallback` になる場合は、SQLite 付きの公式 Python を入れるか、`sqlite3` が使える Python で venv を作り直してください
 - fallback でも、会話全文・音声・文字起こし全文ログは保存しません
+
+## ローカル実機確認チェックリスト
+
+- [ ] backend を `powershell -ExecutionPolicy Bypass -File backend\run_backend.ps1` で起動できる
+- [ ] `http://localhost:8000/api/health` が `{"ok":true,"storageDriver":"sqlite"}` を返す
+- [ ] frontend を `npm run dev -- --host 0.0.0.0` で起動できる
+- [ ] PC ブラウザで子ども画面を開ける
+- [ ] PC ブラウザで親画面を開ける
+- [ ] PC ブラウザで開発画面を開ける
+- [ ] 開発画面のテキスト入力で返答が得られる
+- [ ] 子ども画面がチャットログ表示になっていない
+- [ ] 親画面に会話全文が表示されない
+- [ ] スマホから `http://<PCのIPv4アドレス>:<frontend port>` でアクセスできる
+- [ ] 会話全文・音声・文字起こし全文ログが永続保存されない
 
 ## モックとフォールバック
 

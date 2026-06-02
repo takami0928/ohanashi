@@ -15,6 +15,12 @@ npm install
 npm run dev
 ```
 
+同一 Wi-Fi のスマホから開く場合:
+
+```bash
+npm run dev -- --host 0.0.0.0
+```
+
 ## ビルド
 
 ```bash
@@ -25,9 +31,10 @@ npm run build
 
 デフォルトは `http://127.0.0.1:8000` です。
 
+スマホから確認するときは、frontend は `0.0.0.0` で listen させ、スマホでは `http://<PCのIPv4アドレス>:5173` を開きます。
+
 変更する場合:
 
 ```bash
 VITE_API_BASE=http://127.0.0.1:8000
 ```
-
