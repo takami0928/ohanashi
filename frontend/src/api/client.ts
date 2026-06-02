@@ -50,7 +50,22 @@ export type TurnResponse = {
   debug?: Record<string, unknown>;
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000";
+export type HealthPayload = {
+  ok: boolean;
+  storageDriver: string;
+};
+
+export type HealthState = {
+  status: "checking" | "ok" | "offline";
+  storageDriver: string | null;
+  checkedAt: string | null;
+  message: string;
+};
+
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ??
+  import.meta.env.VITE_API_BASE ??
+  "http://127.0.0.1:8000";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
@@ -69,6 +84,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  baseUrl: API_BASE,
+  health: () => request<HealthPayload>("/api/health"),
   bootstrap: () => request<DashboardPayload>("/api/bootstrap"),
   childTurn: (payload: Record<string, unknown>) =>
     request<TurnResponse>("/api/child/turn", {
@@ -95,4 +112,3 @@ export const api = {
       method: "DELETE",
     }),
 };
-

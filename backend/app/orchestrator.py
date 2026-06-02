@@ -135,10 +135,12 @@ class Orchestrator:
             response_path = "rule"
             fallback = self._generate_rule_response(mode, transcript, memory_context, settings, session.turn_count)
             response_text = fallback
+            llm_provider = "not-requested"
             if should_use_llm(mode, safety.level, "continue", transcript):
                 llm_result = self.llm_client.generate(mode, transcript, memory_context, fallback)
                 response_text = llm_result.text
                 used_llm = llm_result.used
+                llm_provider = llm_result.provider
                 response_path = "llm" if llm_result.used else "rule"
             else:
                 used_llm = False
@@ -167,6 +169,7 @@ class Orchestrator:
             debug_extra={
                 "responsePath": response_path,
                 "sessionAction": "continue",
+                "llmProvider": llm_provider,
                 "memoryUpdates": [card.key for card in updates],
             },
         )

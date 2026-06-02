@@ -1,13 +1,20 @@
-import type { DashboardPayload, MemoryCard, Settings } from "../api/client";
-import { api } from "../api/client";
+import { api, type DashboardPayload, type HealthState, type MemoryCard, type Settings } from "../api/client";
 
 type ParentScreenProps = {
   dashboard: DashboardPayload;
+  health: HealthState;
+  onRefreshHealth: () => Promise<void>;
   onSettingsUpdated: (settings: Settings) => void;
   onDashboardRefresh: () => Promise<void>;
 };
 
-export function ParentScreen({ dashboard, onSettingsUpdated, onDashboardRefresh }: ParentScreenProps) {
+export function ParentScreen({
+  dashboard,
+  health,
+  onRefreshHealth,
+  onSettingsUpdated,
+  onDashboardRefresh,
+}: ParentScreenProps) {
   const settings = dashboard.settings;
 
   async function saveField(key: keyof Settings, value: string | boolean | number) {
@@ -29,6 +36,27 @@ export function ParentScreen({ dashboard, onSettingsUpdated, onDashboardRefresh 
   return (
     <section className="parent-screen">
       <div className="panel-grid">
+        <section className="panel panel--wide">
+          <p className="eyebrow">親画面について</p>
+          <h2>見られるのは利用状況と設定だけです</h2>
+          <p className="helper-text">
+            このMVPは会話全文・音声・文字起こし全文ログを保存しません。親画面では利用状況、設定、記憶カードのみ確認できます。
+          </p>
+        </section>
+
+        <section className="panel">
+          <p className="eyebrow">接続状態</p>
+          <h2>backend の状態</h2>
+          <p className={health.status === "ok" ? "status-inline status-inline--ok" : "status-inline status-inline--warn"}>
+            {health.message}
+          </p>
+          <p className="helper-text">{storageMessage(health.storageDriver ?? dashboard.storageDriver)}</p>
+          <p className="helper-text">確認時刻: {formatCheckedAt(health.checkedAt)}</p>
+          <button className="secondary-button" onClick={() => void onRefreshHealth()}>
+            health を更新
+          </button>
+        </section>
+
         <section className="panel">
           <p className="eyebrow">利用状況</p>
           <h2>今日の利用</h2>
@@ -37,7 +65,19 @@ export function ParentScreen({ dashboard, onSettingsUpdated, onDashboardRefresh 
             {dashboard.usage.last7Days.map((item) => (
               <li key={item.day}>
                 <span>{item.day}</span>
-                <span>{Math.round(item.seconds / 60)}分</span>
+                <span>{Math.round(item.seconds / 60)} 分</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="panel">
+          <p className="eyebrow">使用モード</p>
+          <h2>過去7日で使った遊び</h2>
+          <ul className="plain-list">
+            {Object.entries(dashboard.usage.modeTotals).map(([mode, count]) => (
+              <li key={mode}>
+                {modeLabel(mode)}: {count} 回
               </li>
             ))}
           </ul>
@@ -47,17 +87,11 @@ export function ParentScreen({ dashboard, onSettingsUpdated, onDashboardRefresh 
           <p className="eyebrow">ぬいぐるみ設定</p>
           <label>
             ぬいぐるみの名前
-            <input
-              defaultValue={settings.toy_name}
-              onBlur={(event) => saveField("toy_name", event.target.value)}
-            />
+            <input defaultValue={settings.toy_name} onBlur={(event) => void saveField("toy_name", event.target.value)} />
           </label>
           <label>
             子どもの呼び名
-            <input
-              defaultValue={settings.child_name}
-              onBlur={(event) => saveField("child_name", event.target.value)}
-            />
+            <input defaultValue={settings.child_name} onBlur={(event) => void saveField("child_name", event.target.value)} />
           </label>
           <label>
             話す速さ
@@ -67,12 +101,12 @@ export function ParentScreen({ dashboard, onSettingsUpdated, onDashboardRefresh 
               max="1.2"
               step="0.05"
               defaultValue={settings.speech_rate}
-              onChange={(event) => saveField("speech_rate", Number(event.target.value))}
+              onChange={(event) => void saveField("speech_rate", Number(event.target.value))}
             />
           </label>
           <label>
             元気度
-            <select defaultValue={settings.energy} onChange={(event) => saveField("energy", event.target.value)}>
+            <select defaultValue={settings.energy} onChange={(event) => void saveField("energy", event.target.value)}>
               <option value="gentle">やさしい</option>
               <option value="bouncy">げんき</option>
               <option value="sleepy">ねむねむ</option>
@@ -82,7 +116,7 @@ export function ParentScreen({ dashboard, onSettingsUpdated, onDashboardRefresh 
             <input
               type="checkbox"
               checked={settings.voice_enabled}
-              onChange={(event) => saveField("voice_enabled", event.target.checked)}
+              onChange={(event) => void saveField("voice_enabled", event.target.checked)}
             />
             音声ON
           </label>
@@ -95,7 +129,7 @@ export function ParentScreen({ dashboard, onSettingsUpdated, onDashboardRefresh 
               <input
                 type="checkbox"
                 checked={Boolean(settings[item.key])}
-                onChange={(event) => saveField(item.key, event.target.checked)}
+                onChange={(event) => void saveField(item.key, event.target.checked)}
               />
               {item.label}
             </label>
@@ -105,51 +139,48 @@ export function ParentScreen({ dashboard, onSettingsUpdated, onDashboardRefresh 
         <section className="panel">
           <p className="eyebrow">利用時間制限</p>
           <label>
-            1回の会話上限（分）
+            1回の会話時間の目安
             <input
               type="number"
               min="5"
               max="10"
               defaultValue={settings.session_limit_minutes}
-              onBlur={(event) => saveField("session_limit_minutes", Number(event.target.value))}
+              onBlur={(event) => void saveField("session_limit_minutes", Number(event.target.value))}
             />
           </label>
           <label>
-            1日の合計上限（分）
+            1日の利用時間の目安
             <input
               type="number"
               min="10"
               max="40"
               defaultValue={settings.daily_limit_minutes}
-              onBlur={(event) => saveField("daily_limit_minutes", Number(event.target.value))}
+              onBlur={(event) => void saveField("daily_limit_minutes", Number(event.target.value))}
             />
           </label>
           <label>
-            往復数上限
+            最大往復数
             <input
               type="number"
               min="5"
               max="8"
               defaultValue={settings.max_turns}
-              onBlur={(event) => saveField("max_turns", Number(event.target.value))}
+              onBlur={(event) => void saveField("max_turns", Number(event.target.value))}
             />
           </label>
         </section>
 
         <section className="panel panel--wide">
           <p className="eyebrow">記憶カード</p>
-          <p className="helper-text">
-            会話全文は保存しません。保存対象は呼び名、好きなもの、遊び、抽象化した最近の話題だけです。
-          </p>
+          <p className="helper-text">好きなものや軽い話題だけを保存します。困りごとや秘密の内容は保存しません。</p>
           <div className="memory-list">
             {dashboard.memories.map((card) => (
               <article className="memory-card" key={card.id}>
-                <small>{card.category}</small>
-                <input
-                  defaultValue={card.value}
-                  onBlur={(event) => saveMemory({ ...card, value: event.target.value })}
-                />
-                <button className="secondary-button" onClick={() => deleteMemory(card.id)}>
+                <small>
+                  {card.category} / {card.key}
+                </small>
+                <input defaultValue={card.value} onBlur={(event) => void saveMemory({ ...card, value: event.target.value })} />
+                <button className="secondary-button" onClick={() => void deleteMemory(card.id)}>
                   削除
                 </button>
               </article>
@@ -163,11 +194,40 @@ export function ParentScreen({ dashboard, onSettingsUpdated, onDashboardRefresh 
           <ul className="plain-list">
             <li>危険・秘密・薬・個人情報は固定テンプレートで返します。</li>
             <li>会話全文、音声、文字起こし全文ログは保存しません。</li>
-            <li>親画面でも危険発話の原文は見えません。</li>
+            <li>親画面では利用状況、設定、記憶カードだけを確認できます。</li>
           </ul>
         </section>
       </div>
     </section>
+  );
+}
+
+function formatCheckedAt(value: string | null) {
+  if (!value) {
+    return "未取得";
+  }
+  return new Date(value).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function storageMessage(driver: string) {
+  if (driver === "sqlite") {
+    return "保存状態: SQLite";
+  }
+  if (driver === "json-fallback") {
+    return "保存状態: JSON fallback。Python の sqlite3 確認が必要です。";
+  }
+  return `保存状態: ${driver}`;
+}
+
+function modeLabel(mode: string) {
+  return (
+    {
+      chat: "おしゃべり",
+      adventure: "ごっこ冒険",
+      wordplay: "ことば遊び",
+      story: "お話づくり",
+      sleepy: "ねむねむ",
+    }[mode] ?? mode
   );
 }
 

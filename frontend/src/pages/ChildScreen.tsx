@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { Settings, TurnResponse } from "../api/client";
-import { api } from "../api/client";
+import { api, type HealthState, type Settings, type TurnResponse } from "../api/client";
 import { FaceCard } from "../components/FaceCard";
 
 type ChildScreenProps = {
   settings: Settings;
+  health: HealthState;
+  onParentOpen: () => void;
+  onDevOpen: () => void;
 };
 
-export function ChildScreen({ settings }: ChildScreenProps) {
-  const [status, setStatus] = useState("きいてるよ");
+export function ChildScreen({ settings, health, onParentOpen, onDevOpen }: ChildScreenProps) {
+  const [status, setStatus] = useState("まってるよ");
   const [reply, setReply] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState("");
@@ -39,7 +41,7 @@ export function ChildScreen({ settings }: ChildScreenProps) {
     }
 
     if (!navigator.mediaDevices || typeof MediaRecorder === "undefined") {
-      setError("この端末では声入力が使えません。開発画面のテキスト入力で確認してください。");
+      setError("この端末では録音できません。開発画面のテキスト入力で確認してください。");
       return;
     }
 
@@ -68,7 +70,7 @@ export function ChildScreen({ settings }: ChildScreenProps) {
       setIsRecording(true);
       setStatus("きいてるよ");
     } catch {
-      setError("マイクが使えませんでした。開発画面でテキスト入力を使ってください。");
+      setError("マイクが使えません。開発画面のテキスト入力で確認してください。");
     }
   }
 
@@ -82,7 +84,7 @@ export function ChildScreen({ settings }: ChildScreenProps) {
       handleTurnResult(result);
     } catch {
       setStatus("ちょっと休憩");
-      setError("ローカルサーバーにつながりません。");
+      setError("backend に接続できません。大人の人に起動をお願いしてね。");
     }
   }
 
@@ -111,14 +113,32 @@ export function ChildScreen({ settings }: ChildScreenProps) {
   return (
     <section className="child-screen">
       <FaceCard name={settings.toy_name || "もこ"} stateLabel={status} currentReply={reply} />
-      <button className={`talk-button ${isRecording ? "talk-button--active" : ""}`} onClick={toggleRecording}>
-        {isRecording ? "きくのをおわる" : "おはなしする"}
-      </button>
-      <button className="secondary-button" onClick={() => setReply("")}>
-        もう一回
-      </button>
-      <p className="helper-text">おはなしの文字ログはのこしません。</p>
-      {error ? <p className="error-text">{error}</p> : null}
+
+      <section className="child-action-card">
+        <p className="eyebrow">おはなしボタン</p>
+        <button
+          className={`talk-button ${isRecording ? "talk-button--active" : ""}`}
+          onClick={toggleRecording}
+          aria-pressed={isRecording}
+        >
+          {isRecording ? "きくのを おわる" : "おはなしする"}
+        </button>
+        <button className="secondary-button secondary-button--wide" onClick={() => setReply("")}>
+          もう一回
+        </button>
+        <p className="helper-text">ボタンをおして、ぬいぐるみに話しかけてね。</p>
+        {error ? <p className="error-text">{error}</p> : null}
+        {health.status === "offline" ? <p className="status-inline status-inline--warn">{health.message}</p> : null}
+      </section>
+
+      <div className="child-admin-links" aria-label="大人向けリンク">
+        <button className="tabbar__button tabbar__button--quiet" onClick={onParentOpen}>
+          親画面
+        </button>
+        <button className="tabbar__button tabbar__button--quiet" onClick={onDevOpen}>
+          開発画面
+        </button>
+      </div>
     </section>
   );
 }
@@ -132,4 +152,3 @@ async function blobToBase64(blob: Blob): Promise<string> {
   });
   return btoa(binary);
 }
-

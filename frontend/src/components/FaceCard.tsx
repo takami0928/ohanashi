@@ -15,10 +15,12 @@ export function FaceCard({ name, stateLabel, currentReply }: FaceCardProps) {
           <span className="face-card__nose" />
         </div>
       </div>
-      <p className="eyebrow">{stateLabel}</p>
+      <div className="face-card__status">
+        <p className="eyebrow">いまのようす</p>
+        <strong>{stateLabel}</strong>
+      </div>
       <h1>{name}</h1>
       <p className="reply-chip">{currentReply || "ここで、おはなしをきくよ。"}</p>
     </section>
   );
 }
-

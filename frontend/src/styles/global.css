@@ -47,6 +47,12 @@ button {
   margin-bottom: 20px;
 }
 
+.topbar--child {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .eyebrow {
   margin: 0 0 4px;
   color: #8f6240;
@@ -57,13 +63,22 @@ button {
 
 .topbar h1,
 .panel h2,
-.dev-screen h2 {
+.dev-screen h2,
+.face-card h1 {
   margin: 0;
 }
 
-.tabbar {
+.topbar h1,
+.face-card h1 {
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+}
+
+.tabbar,
+.button-row,
+.child-admin-links {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .tabbar__button,
@@ -79,14 +94,24 @@ button {
   color: #fff7f0;
 }
 
-.child-screen {
+.tabbar__button--quiet {
+  background: rgba(255, 250, 243, 0.92);
+  border: 1px solid rgba(161, 116, 77, 0.16);
+}
+
+.child-screen,
+.dev-screen {
   display: grid;
   gap: 18px;
+}
+
+.child-screen {
   justify-items: center;
 }
 
 .face-card,
-.panel {
+.panel,
+.child-action-card {
   background: rgba(255, 250, 243, 0.92);
   border: 1px solid rgba(161, 116, 77, 0.16);
   border-radius: 28px;
@@ -100,13 +125,12 @@ button {
 }
 
 .face-card__bubble {
-  width: 220px;
-  height: 220px;
+  width: min(220px, 56vw);
+  height: min(220px, 56vw);
   margin: 0 auto 20px;
   border-radius: 50%;
   position: relative;
-  background:
-    radial-gradient(circle at 35% 30%, #ffe6c2 0%, #e9b67a 100%);
+  background: radial-gradient(circle at 35% 30%, #ffe6c2 0%, #e9b67a 100%);
 }
 
 .face-card__ears::before,
@@ -157,27 +181,46 @@ button {
   box-shadow: 0 18px 0 -8px #805338;
 }
 
+.face-card__status {
+  display: inline-grid;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
 .reply-chip {
-  min-height: 54px;
+  min-height: 78px;
   margin: 14px 0 0;
-  padding: 14px 18px;
+  padding: 16px 18px;
   border-radius: 20px;
   background: #fff;
+  overflow-wrap: anywhere;
+}
+
+.child-action-card {
+  width: min(100%, 520px);
+  padding: 22px;
+  text-align: center;
 }
 
 .talk-button {
   width: min(100%, 360px);
+  min-height: 88px;
   padding: 20px 24px;
   border-radius: 999px;
   background: linear-gradient(135deg, #f29b4b, #de6d2d);
   color: #fffaf5;
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   font-weight: 700;
   box-shadow: 0 20px 40px rgba(198, 101, 41, 0.28);
 }
 
 .talk-button--active {
   background: linear-gradient(135deg, #d35c52, #b43d29);
+}
+
+.secondary-button--wide {
+  width: min(100%, 360px);
+  margin-top: 12px;
 }
 
 .helper-text,
@@ -188,6 +231,32 @@ button {
 
 .error-text {
   color: #9f2f1d;
+}
+
+.status-stack {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.status-inline {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.92rem;
+}
+
+.status-inline--ok {
+  background: rgba(114, 171, 92, 0.15);
+  color: #3f6f2c;
+}
+
+.status-inline--warn {
+  background: rgba(209, 111, 57, 0.14);
+  color: #8a431c;
 }
 
 .panel-grid {
@@ -258,9 +327,15 @@ button {
   background: rgba(255, 255, 255, 0.86);
 }
 
-.dev-screen {
+.sample-grid {
   display: grid;
-  gap: 16px;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  margin: 12px 0 16px;
+}
+
+.sample-button {
+  text-align: center;
 }
 
 @media (max-width: 720px) {
@@ -274,12 +349,26 @@ button {
     flex-direction: column;
   }
 
+  .topbar--child {
+    align-items: center;
+  }
+
   .tabbar {
     width: 100%;
-    justify-content: space-between;
   }
 
   .tabbar__button {
     flex: 1;
+    justify-content: center;
+  }
+
+  .talk-button,
+  .secondary-button--wide {
+    width: 100%;
+  }
+
+  .child-admin-links {
+    width: min(100%, 520px);
+    justify-content: flex-end;
   }
 }
